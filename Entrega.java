@@ -80,7 +80,47 @@ class Entrega {
     static final char NAND = '.';
 
     static int exercici1(char[] ops, int[] vars) {
-      throw new UnsupportedOperationException("pendent");
+      int nVars = Arrays.stream(vars).max().getAsInt() + 1;
+      int totalComb = 1 << nVars;
+
+      boolean sempreCerta = true;
+      boolean sempreFalsa = true;
+
+      for (int comb = 0; comb < totalComb; comb++) {
+        boolean[] valors = new boolean[nVars];
+        for (int i = 0; i < nVars; i++) {
+          valors[i] = ((comb >> i) & 1) == 1;
+        }
+
+        boolean resultat = valors[vars[0]];
+        for (int i = 0; i < ops.length; i++) {
+          boolean seguent = valors[vars[i + 1]];
+          switch (ops[i]) {
+            case CONJ:
+              resultat = resultat && seguent;
+              break;
+            case DISJ:
+              resultat = resultat || seguent;
+              break;
+            case IMPL:
+              resultat = !resultat || seguent;
+              break;
+            case NAND:
+              resultat = !(resultat && seguent);
+              break;
+          }
+        }
+
+        if (resultat) {
+          sempreFalsa = false;
+        } else {
+          sempreCerta = false;
+        }
+      }
+
+      if (sempreCerta) return 1;
+      if (sempreFalsa) return 0;
+      return -1;
     }
 
     /*
@@ -94,9 +134,20 @@ class Entrega {
      * (∀x : P(x)) <-> (∃!x : Q(x))
      */
     static boolean exercici2(int[] universe, Predicate<Integer> p, Predicate<Integer> q) {
-      throw new UnsupportedOperationException("pendent");
-    }
+            boolean forallP = true;
+            int countQ = 0;
 
+            for (int x : universe) {
+                if (!p.test(x)) {
+                    forallP = false;
+                }
+                if (q.test(x)) {
+                    countQ++;
+                }
+            }
+            boolean existsUniqueQ = countQ == 1;
+            return forallP == existsUniqueQ;
+        }
     static void tests() {
       // Exercici 1
       // Taules de veritat
