@@ -122,6 +122,13 @@ class Entrega {
       if (sempreFalsa) return 0;
       return -1;
     }
+     static void test(int x, int y, int z, boolean condition) {
+        if (condition) {
+            System.out.println("Test " + x + y + z + " passat.");
+        } else {
+            System.out.println("Test " + x + y + z + " fallat.");
+        }
+    }
 
     /*
      * Aquest mètode té de paràmetre l'univers (representat com un array) i els predicats
@@ -148,6 +155,23 @@ class Entrega {
             boolean existsUniqueQ = countQ == 1;
             return forallP == existsUniqueQ;
         }
+    static void test(int tema, int subtema, int numTest, BooleanSupplier f) {
+        boolean r = false;
+        Exception err = null;
+        try {
+          r = f.getAsBoolean();
+        } catch (Exception e) {
+          err = e;
+        }
+        String missatge = "Tema " + tema + "." + subtema + ", test #" + numTest + " => ";
+        if (err != null) {
+          System.out.println(missatge + "EXCEPCIÓ: " + err);
+        } else if (!r) {
+          System.out.println(missatge + "INCORRECTE");
+        } else {
+          System.out.println(missatge + "correcte");
+        }
+  }
     static void tests() {
       // Exercici 1
       // Taules de veritat
