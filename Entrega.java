@@ -122,13 +122,6 @@ class Entrega {
       if (sempreFalsa) return 0;
       return -1;
     }
-     static void test(int x, int y, int z, boolean condition) {
-        if (condition) {
-            System.out.println("Test " + x + y + z + " passat.");
-        } else {
-            System.out.println("Test " + x + y + z + " fallat.");
-        }
-    }
 
     /*
      * Aquest mètode té de paràmetre l'univers (representat com un array) i els predicats
@@ -155,23 +148,6 @@ class Entrega {
             boolean existsUniqueQ = countQ == 1;
             return forallP == existsUniqueQ;
         }
-    static void test(int tema, int subtema, int numTest, BooleanSupplier f) {
-        boolean r = false;
-        Exception err = null;
-        try {
-          r = f.getAsBoolean();
-        } catch (Exception e) {
-          err = e;
-        }
-        String missatge = "Tema " + tema + "." + subtema + ", test #" + numTest + " => ";
-        if (err != null) {
-          System.out.println(missatge + "EXCEPCIÓ: " + err);
-        } else if (!r) {
-          System.out.println(missatge + "INCORRECTE");
-        } else {
-          System.out.println(missatge + "correcte");
-        }
-  }
     static void tests() {
       // Exercici 1
       // Taules de veritat
@@ -223,7 +199,24 @@ class Entrega {
      * Pista: Cercau informació sobre els nombres de Stirling.
      */
     static int exercici1(int[] a) {
-      throw new UnsupportedOperationException("pendent");
+       int n = a.length;
+
+      // Creamos la tabla de números de Stirling
+      int[][] stirling = new int[n + 1][n + 1];
+      stirling[0][0] = 1;
+  
+      // Calculamos los números de Stirling
+      for (int i = 1; i <= n; i++) {
+          for (int j = 1; j <= i; j++) {
+              stirling[i][j] = j * stirling[i - 1][j] + stirling[i - 1][j - 1];
+          }
+      }
+      // Sumamos los S(n, k) para obtener el número total de particiones
+      int particiones = 0;
+      for (int k = 1; k <= n; k++) {
+          particiones += stirling[n][k];
+      }
+    return particiones;
     }
 
     /*
@@ -234,7 +227,51 @@ class Entrega {
      * Si no existeix, retornau -1.
      */
     static int exercici2(int[] a, int[][] rel) {
-      throw new UnsupportedOperationException("pendent");
+        // Convertim rel a una llista de parells
+        List<List<Integer>> relació = new ArrayList<>();
+        for (int[] parell : rel) {
+          relació.add(Arrays.asList(parell[0], parell[1]));
+        }
+      
+        // Clausura reflexiva
+        for (int x : a) {
+          List<Integer> reflexiu = Arrays.asList(x, x);
+          if (!relació.contains(reflexiu)) {
+            relació.add(reflexiu);
+          }
+        }
+      
+        // Clausura transitiva (tipus Warshall)
+        boolean canviat;
+        do {
+          canviat = false;
+          List<List<Integer>> afegir = new ArrayList<>();
+      
+          for (List<Integer> p1 : relació) {
+            for (List<Integer> p2 : relació) {
+              if (p1.get(1).equals(p2.get(0))) {
+                List<Integer> nou = Arrays.asList(p1.get(0), p2.get(1));
+                if (!relació.contains(nou) && !afegir.contains(nou)) {
+                  afegir.add(nou);
+                  canviat = true;
+                }
+              }
+            }
+          }
+      
+          relació.addAll(afegir);
+        } while (canviat);
+      
+        // Comprovació d'antisimetria
+        for (List<Integer> p : relació) {
+          int x = p.get(0);
+          int y = p.get(1);
+          if (x != y && relació.contains(Arrays.asList(y, x))) {
+            return -1;
+          }
+        }
+
+    return relació.size();
     }
 
     /*
@@ -245,8 +282,65 @@ class Entrega {
      * - null en qualsevol altre cas
      */
     static Integer exercici3(int[] a, int[][] rel, int[] x, boolean op) {
-      throw new UnsupportedOperationException("pendent");
+        // Construimos la relación como una matriz de accesibilidad
+        boolean[][] mat = new boolean[a.length][a.length];
+      // Llenamos la matriz de relación
+        for (int[] par : rel) {
+            int i = indexOf(a, par[0]);
+            int j = indexOf(a, par[1]);
+            mat[i][j] = true;
+        }
+        // Clausura reflexiva
+        for (int i = 0; i < a.length; i++) {
+        mat[i][i] = true;
     }
+        // Clausura transitiva (Warshall)
+        for (int k = 0; k < a.length; k++) {
+          for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a.length; j++) {
+              mat[i][j] = mat[i][j] || (mat[i][k] && mat[k][j]);
+            }
+          }
+        }
+      
+        Integer millor = null;
+      
+        for (int candidat : a) {
+          boolean vàlid = true;
+          for (int xi : x) {
+            int idxC = indexOf(a, candidat);
+            int idxX = indexOf(a, xi);
+            if (op) { // suprem: candidat >= xi per tots
+              if (!mat[idxX][idxC]) {
+                vàlid = false;
+                break;
+              }
+            } else { // ínfim: candidat <= xi per tots
+              if (!mat[idxC][idxX]) {
+                vàlid = false;
+                break;
+              }
+            }
+          }
+          if (vàlid) {
+            if (millor == null) {
+              millor = candidat;
+            } else if (op) {
+              if (candidat < millor) millor = candidat;
+            } else {
+              if (candidat > millor) millor = candidat;
+            }
+          }
+        }
+      
+        return millor;
+}
+
+private static int indexOf(int[] a, int v) {
+  for (int i = 0; i < a.length; i++) if (a[i] == v) return i;
+  return -1;
+}
+
 
     /*
      * Donada una funció `f` de `a` a `b`, retornau:
@@ -256,7 +350,6 @@ class Entrega {
      *  - Sinó, null.
      */
     static int[][] exercici4(int[] a, int[] b, Function<Integer, Integer> f) {
-      throw new UnsupportedOperationException("pendent");
     }
 
     /*
