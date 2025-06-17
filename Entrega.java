@@ -50,7 +50,7 @@ import java.util.stream.IntStream;
  * de texte estigui configurat amb codificació UTF-8.
  */
 class Entrega {
-  static final String[] NOMS = {};
+  static final String[] NOMS = {"Jesus de Quiroga, Pablo Calafat Espín, Ignacio Jael "};
 
   /*
    * Aquí teniu els exercicis del Tema 1 (Lògica).
@@ -310,12 +310,12 @@ class Entrega {
           for (int xi : x) {
             int idxC = indexOf(a, candidat);
             int idxX = indexOf(a, xi);
-            if (op) { // suprem: candidat >= xi per tots
+            if (op) { // suprem: candidat >= Xi per tots
               if (!mat[idxX][idxC]) {
                 vàlid = false;
                 break;
               }
-            } else { // ínfim: candidat <= xi per tots
+            } else { // ínfim: candidat <= Xi per tots
               if (!mat[idxC][idxX]) {
                 vàlid = false;
                 break;
@@ -336,10 +336,10 @@ class Entrega {
         return millor;
 }
 
-private static int indexOf(int[] a, int v) {
-  for (int i = 0; i < a.length; i++) if (a[i] == v) return i;
-  return -1;
-}
+    private static int indexOf(int[] a, int v) {
+      for (int i = 0; i < a.length; i++) if (a[i] == v) return i;
+      return -1;
+    }
 
 
     /*
@@ -349,9 +349,90 @@ private static int indexOf(int[] a, int v) {
      *  - Sinó, el graf d'una inversa seva per la dreta (si existeix)
      *  - Sinó, null.
      */
-    static int[][] exercici4(int[] a, int[] b, Function<Integer, Integer> f) {
-            throw new UnsupportedOperationException("pendent");
-    }
+      static int[][] exercici4(int[] a, int[] b, Function<Integer, Integer> f) {
+          // Paso 1: Intentar inversa total (biyección)
+          List<Integer> imagenes = new ArrayList<>();
+          boolean inyectiva = true;
+          for (int x : a) {
+              int y = f.apply(x);
+              if (imagenes.contains(y)) {
+                  inyectiva = false;
+                  break;
+              }
+              imagenes.add(y);
+          }
+
+          boolean exhaustiva = true;
+          for (int y : b) {
+              if (!imagenes.contains(y)) {
+                  exhaustiva = false;
+                  break;
+              }
+          }
+
+          if (inyectiva && exhaustiva) {
+              // Es inversa total
+              List<int[]> inversa = new ArrayList<>();
+              for (int y : b) {
+                  for (int x : a) {
+                      if (f.apply(x) == y) {
+                          inversa.add(new int[]{y, x});
+                          break;
+                      }
+                  }
+              }
+              return inversa.toArray(int[][]::new);
+          }
+
+          // Paso 2: Intentar inversa por la izquierda (usar solo elementos de a)
+          List<int[]> inversaIzq = new ArrayList<>();
+          for (int y : b) {
+              boolean encontrado = false;
+              for (int x : a) {
+                  if (f.apply(x) == y) {
+                      inversaIzq.add(new int[]{y, x});
+                      encontrado = true;
+                      break;
+                  }
+              }
+              if (!encontrado) {
+                  inversaIzq = null;
+                  break;
+              }
+          }
+          if (inversaIzq != null) {
+              return inversaIzq.toArray(int[][]::new);
+          }
+
+          // Paso 3: Intentar inversa por la derecha (usar valores ficticios si hace falta)
+          // Buscamos algún x (no necesariamente en a) tal que f(x) = y
+          // Como no conocemos el dominio completo, probamos una cantidad razonable de x
+          List<int[]> inversaDer = new ArrayList<>();
+          for (int y : b) {
+              boolean encontrado = false;
+              for (int x = -1000; x <= 1000; x++) {
+                  if (f.apply(x) == y) {
+                      inversaDer.add(new int[]{y, x});
+                      encontrado = true;
+                      break;
+                  }
+              }
+              if (!encontrado) {
+                  inversaDer = null;
+                  break;
+              }
+          }
+          if (inversaDer != null) {
+              return inversaDer.toArray(int[][]::new);
+          }
+
+          // Si no hay ninguna forma posible
+          return null;
+      }
+
+
+// Método auxiliar para encontrar el índice de un valor en un array
+
 
     /*
      * Aquí teniu alguns exemples i proves relacionades amb aquests exercicis (vegeu `main`)
@@ -486,15 +567,64 @@ private static int indexOf(int[] a, int v) {
      * Determinau si el graf `g` (no dirigit) té cicles.
      */
     static boolean exercici1(int[][] g) {
-      throw new UnsupportedOperationException("pendent");
+        boolean[] visitat = new boolean[g.length];
+
+        return comprobarCicles(g, 0, -1, visitat);
     }
 
+    static boolean comprobarCicles(int[][] g, int u, int pare, boolean[] visitat) {
+        visitat[u] = true;
+
+        for (int v : g[u]) {
+            if (!visitat[v]) {
+                if (comprobarCicles(g, v, u, visitat)) return true;
+            } else if (v != pare) {
+                return true; // Trobam una aresta cap enrere -> cicle
+            }
+        }
+
+        return false;
+    }
     /*
      * Determinau si els dos grafs són isomorfs. Podeu suposar que cap dels dos té ordre major que
      * 10.
      */
     static boolean exercici2(int[][] g1, int[][] g2) {
-      throw new UnsupportedOperationException("pendent");
+        int n = g1.length;
+        if (n != g2.length) return false;
+
+        int[] perm = IntStream.range(0, n).toArray();
+        return permutacions(perm, 0, g1, g2);
+    }
+
+    static boolean permutacions(int[] perm, int i, int[][] g1, int[][] g2) {
+        if (i == perm.length) {
+            return esIsomorf(g1, g2, perm);
+        }
+
+        for (int j = i; j < perm.length; j++) {
+            cambiar(perm, i, j);
+            if (permutacions(perm, i + 1, g1, g2)) return true;
+            cambiar(perm, i, j);
+        }
+
+        return false;
+    }
+
+    static boolean esIsomorf(int[][] g1, int[][] g2, int[] perm) {
+        int n = g1.length;
+        for (int i = 0; i < n; i++) {
+            List<Integer> adjG1 = Arrays.stream(g1[i]).map(j -> perm[j]).sorted().boxed().toList();
+            List<Integer> adjG2 = Arrays.stream(g2[perm[i]]).sorted().boxed().toList();
+            if (!adjG1.equals(adjG2)) return false;
+        }
+        return true;
+    }
+
+    static void cambiar(int[] a, int i, int j) {
+        int tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
     }
 
     /*
@@ -505,9 +635,68 @@ private static int indexOf(int[] a, int v) {
      * vèrtex.
      */
     static int[] exercici3(int[][] g, int r) {
-      throw new UnsupportedOperationException("pendent");
+        // Un grafo es un árbol si es conexo y no tiene ciclos
+        if (!esArbol(g)) {
+            return null;
+        }
+
+        // Realizar recorrido en postorden
+        List<Integer> postorden = new ArrayList<>();
+        boolean[] visitado = new boolean[g.length];
+        postorden(g, r, -1, visitado, postorden);
+
+        // Convertir la lista a array
+        int[] resultado = new int[postorden.size()];
+        for (int i = 0; i < resultado.length; i++) {
+            resultado[i] = postorden.get(i);
+        }
+
+        return resultado;
     }
 
+    // Método auxiliar para verificar si es un árbol
+    private static boolean esArbol(int[][] g) {
+        if (g.length == 0) return true; // árbol vacío
+
+        boolean[] visitado = new boolean[g.length];
+        if (tieneCiclos(g, 0, -1, visitado)) {
+            return false;
+        }
+
+        // Verificar si es conexo
+        for (boolean v : visitado) {
+            if (!v) return false;
+        }
+
+        return true;
+    }
+
+    // Método auxiliar para detectar ciclos
+    private static boolean tieneCiclos(int[][] g, int u, int padre, boolean[] visitado) {
+        visitado[u] = true;
+
+        for (int v : g[u]) {
+            if (!visitado[v]) {
+                if (tieneCiclos(g, v, u, visitado)) {
+                    return true;
+                }
+            } else if (v != padre) {
+                return true; // //Si se detecta un ciclo se devuelve true
+            }
+        }
+
+        return false;
+    }
+
+    // Método auxiliar para recorrido postorden
+    private static void postorden(int[][] g, int u, int padre, boolean[] visitado, List<Integer> resultado) {
+        for (int v : g[u]) {
+            if (v != padre) {
+                postorden(g, v, u, visitado, resultado);
+            }
+        }
+        resultado.add(u);
+    }
     /*
      * Suposau que l'entrada és un mapa com el següent, donat com String per files (vegeu els tests)
      *
