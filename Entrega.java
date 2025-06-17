@@ -232,7 +232,7 @@ class Entrega {
           relació.add(Arrays.asList(parell[0], parell[1]));
         }
       
-        // Clausura reflexiva
+        // Clausura reflexiva: añadimos (x, x) para cada x ∈ a si no está presente
         for (int x : a) {
           List<Integer> reflexiu = Arrays.asList(x, x);
           if (!relació.contains(reflexiu)) {
@@ -240,7 +240,7 @@ class Entrega {
           }
         }
       
-        // Clausura transitiva
+        // Clausura transitiva: añadimos (x, z) si existen (x, y) y (y, z)
         boolean canviat;
         do {
           canviat = false;
@@ -261,7 +261,7 @@ class Entrega {
           relació.addAll(afegir);
         } while (canviat);
       
-        // Comprovació d'antisimetria
+        // Comprovació d'antisimetria: si (x, y) y (y, x) ∈ R y (x) diferente (y) entonces no es de orden parcial
         for (List<Integer> p : relació) {
           int x = p.get(0);
           int y = p.get(1);
@@ -269,7 +269,7 @@ class Entrega {
             return -1;
           }
         }
-
+// Si llegamos aquí, la clausura es válida y devolvemos su tamaño (número de pares)
     return relació.size();
     }
 
@@ -293,7 +293,7 @@ class Entrega {
         for (int i = 0; i < a.length; i++) {
         mat[i][i] = true;
     }
-        // Clausura transitiva (Warshall)
+        // Clausura transitiva
         for (int k = 0; k < a.length; k++) {
           for (int i = 0; i < a.length; i++) {
             for (int j = 0; j < a.length; j++) {
@@ -301,7 +301,7 @@ class Entrega {
             }
           }
         }
-      
+        // Inicializamos el candidato a ínfim/suprem como null
         Integer millor = null;
       
         for (int candidat : a) {
@@ -321,13 +321,13 @@ class Entrega {
               }
             }
           }
-          if (vàlid) {
+          if (vàlid) {  // Si el candidato cumple, actualizamos el "mejor" (mínimo supremo o máximo ínfimo)
             if (millor == null) {
               millor = candidat;
             } else if (op) {
-              if (candidat < millor) millor = candidat;
+              if (candidat < millor) millor = candidat; // En caso de suprem, elegimos el más pequeño entre los válidos
             } else {
-              if (candidat > millor) millor = candidat;
+              if (candidat > millor) millor = candidat; // En caso de ínfim, elegimos el más grande entre los válidos
             }
           }
         }
@@ -403,9 +403,10 @@ class Entrega {
               return inversaIzq.toArray(int[][]::new);
           }
 
-          // Paso 3: Intentar inversa por la derecha (usar valores ficticios si hace falta)
-          // Buscamos algún x (no necesariamente en a) tal que f(x) = y
-          // Como no conocemos el dominio completo, probamos una cantidad razonable de x
+          /* Paso 3: Intentar inversa por la derecha (usar valores ficticios si hace falta)
+          * Buscamos algún x (no necesariamente en a) tal que f(x) = y
+          * Como no conocemos el dominio completo, probamos una cantidad razonable de x
+          */
           List<int[]> inversaDer = new ArrayList<>();
           for (int y : b) {
               boolean encontrado = false;
@@ -428,10 +429,6 @@ class Entrega {
           // Si no hay ninguna forma posible
           return null;
       }
-
-
-// Método auxiliar para encontrar el índice de un valor en un array
-
 
     /*
      * Aquí teniu alguns exemples i proves relacionades amb aquests exercicis (vegeu `main`)
@@ -570,7 +567,13 @@ class Entrega {
 
         return comprobarCicles(g, 0, -1, visitat);
     }
-
+    /*
+     * Recorregut per detectar cicles en un graf no dirigit.
+     * - g: graf representat com una llista d'adjacència
+     * - u: node actual
+     * - pare: node anterior en el camí (per evitar tornar enrere)
+     * - visitat: marcatge de nodes visitats
+     */
     static boolean comprobarCicles(int[][] g, int u, int pare, boolean[] visitat) {
         visitat[u] = true;
 
@@ -590,17 +593,18 @@ class Entrega {
      */
     static boolean exercici2(int[][] g1, int[][] g2) {
         int n = g1.length;
-        if (n != g2.length) return false;
+        if (n != g2.length) return false;   // Si el nombre de nodes és diferent, no poden ser isomorfs
 
         int[] perm = IntStream.range(0, n).toArray();
-        return permutacions(perm, 0, g1, g2);
+        return permutacions(perm, 0, g1, g2);   // Provam totes les permutacions a veure si alguna fa que g1 ≅ g2
     }
 
     static boolean permutacions(int[] perm, int i, int[][] g1, int[][] g2) {
-        if (i == perm.length) {
+        if (i == perm.length) {  // Si ja hem fixat tota la permutació, comprovam si és un isomorfisme
             return esIsomorf(g1, g2, perm);
         }
 
+    // Provam totes les permutacions a partir de la posició i
         for (int j = i; j < perm.length; j++) {
             cambiar(perm, i, j);
             if (permutacions(perm, i + 1, g1, g2)) return true;
@@ -613,9 +617,9 @@ class Entrega {
     static boolean esIsomorf(int[][] g1, int[][] g2, int[] perm) {
         int n = g1.length;
         for (int i = 0; i < n; i++) {
-            List<Integer> adjG1 = Arrays.stream(g1[i]).map(j -> perm[j]).sorted().boxed().toList();
-            List<Integer> adjG2 = Arrays.stream(g2[perm[i]]).sorted().boxed().toList();
-            if (!adjG1.equals(adjG2)) return false;
+            List<Integer> adjG1 = Arrays.stream(g1[i]).map(j -> perm[j]).sorted().boxed().toList(); // Reindexam les arestes de g1 segons la permutació y aplicam la permutació
+            List<Integer> adjG2 = Arrays.stream(g2[perm[i]]).sorted().boxed().toList();    // Arestes del node permutat a g2
+            if (!adjG1.equals(adjG2)) return false; // Si la llista d'adjacència no coincideix, no és isomorfisme
         }
         return true;
     }
