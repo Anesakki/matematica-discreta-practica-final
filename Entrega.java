@@ -50,7 +50,7 @@ import java.util.stream.IntStream;
  * de texte estigui configurat amb codificació UTF-8.
  */
 class Entrega {
-  static final String[] NOMS = {"Jesus de Quiroga, Pablo Calafat Espín, Ignacio Jael "};
+  static final String[] NOMS = {"Jesus de Quiroga, Pablo Calafat Espín, Ignacio Jael Fernandez Urreta "};
 
   /*
    * Aquí teniu els exercicis del Tema 1 (Lògica).
@@ -86,14 +86,14 @@ class Entrega {
       boolean sempreCerta = true;
       boolean sempreFalsa = true;
 
-      for (int comb = 0; comb < totalComb; comb++) {
+      for (int comb = 0; comb < totalComb; comb++) { //Este for recorre todas las posibilidades de combinaciones
         boolean[] valors = new boolean[nVars];
         for (int i = 0; i < nVars; i++) {
           valors[i] = ((comb >> i) & 1) == 1;
         }
 
-        boolean resultat = valors[vars[0]];
-        for (int i = 0; i < ops.length; i++) {
+        boolean resultat = valors[vars[0]]; //Se inicia en este valor y lo aumentamos mas tarde para recorrerlo todo
+        for (int i = 0; i < ops.length; i++) { //Este for evalua la expresion lógica paso a paso
           boolean seguent = valors[vars[i + 1]];
           switch (ops[i]) {
             case CONJ:
@@ -118,8 +118,8 @@ class Entrega {
         }
       }
 
-      if (sempreCerta) return 1;
-      if (sempreFalsa) return 0;
+      if (sempreCerta) return 1; //tautologia
+      if (sempreFalsa) return 0; //contradicció
       return -1;
     }
 
@@ -134,19 +134,19 @@ class Entrega {
      * (∀x : P(x)) <-> (∃!x : Q(x))
      */
     static boolean exercici2(int[] universe, Predicate<Integer> p, Predicate<Integer> q) {
-            boolean forallP = true;
-            int countQ = 0;
+            boolean P = true; //P(x) es cierto
+            int totalQ = 0;
 
-            for (int x : universe) {
+            for (int x : universe) { //Recorremos todo el universo
                 if (!p.test(x)) {
-                    forallP = false;
+                    P = false;
                 }
                 if (q.test(x)) {
-                    countQ++;
+                    totalQ++;
                 }
             }
-            boolean existsUniqueQ = countQ == 1;
-            return forallP == existsUniqueQ;
+            boolean existeQUnica = totalQ == 1;
+            return P == existeQUnica;
         }
     static void tests() {
       // Exercici 1
@@ -199,14 +199,13 @@ class Entrega {
      * Pista: Cercau informació sobre els nombres de Stirling.
      */
     static int exercici1(int[] a) {
-       int n = a.length;
+       int n = a.length; //total elementos del conjunto
 
       // Creamos la tabla de números de Stirling
       int[][] stirling = new int[n + 1][n + 1];
       stirling[0][0] = 1;
   
-      // Calculamos los números de Stirling
-      for (int i = 1; i <= n; i++) {
+      for (int i = 1; i <= n; i++) {         // Rellenamos la tabla usando la fórmula recursiva: S(n, k) = k * S(n-1, k) + S(n-1, k-1)
           for (int j = 1; j <= i; j++) {
               stirling[i][j] = j * stirling[i - 1][j] + stirling[i - 1][j - 1];
           }
@@ -214,7 +213,7 @@ class Entrega {
       // Sumamos los S(n, k) para obtener el número total de particiones
       int particiones = 0;
       for (int k = 1; k <= n; k++) {
-          particiones += stirling[n][k];
+          particiones += stirling[n][k];     // Esta suma es el número de Bell B(n)
       }
     return particiones;
     }
@@ -241,7 +240,7 @@ class Entrega {
           }
         }
       
-        // Clausura transitiva (tipus Warshall)
+        // Clausura transitiva
         boolean canviat;
         do {
           canviat = false;
